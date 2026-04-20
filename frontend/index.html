@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpotmySkill (SMS)</title>
+    <!-- Modern Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Vibrant Dark Mode Palette */
+            --bg-color: #0f172a; /* Slate 900 */
+            --glass-bg: rgba(30, 41, 59, 0.7); /* Slate 800 with opacity */
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --primary: #3b82f6; /* Blue 500 */
+            --primary-hover: #2563eb; /* Blue 600 */
+            --accent: #8b5cf6; /* Violet 500 */
+            --text-main: #f8fafc; /* Slate 50 */
+            --text-muted: #94a3b8; /* Slate 400 */
+            --tag-bg: rgba(59, 130, 246, 0.2);
+            --tag-border: rgba(59, 130, 246, 0.5);
+            --error: #ef4444; /* Red 500 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 3rem 1.5rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Background Glow */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: -10%;
+            width: 70vw;
+            height: 70vw;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(15,23,42,0) 70%);
+            z-index: -1;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            right: -10%;
+            width: 60vw;
+            height: 60vw;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, rgba(15,23,42,0) 60%);
+            z-index: -1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Header Styles */
+        .header {
+            text-align: center;
+            margin-bottom: 1rem;
+            animation: fadeInDown 0.8s ease-out forwards;
+        }
+
+        .header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #60a5fa, #a78bfa); /* Light Blue to Light Violet */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Glassmorphism Card Base */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .glass-card:hover {
+            box-shadow: 0 30px 60px -10px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Input Section */
+        .input-section {
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            opacity: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Tabs (Text vs File) - For future expansion if needed, currently focusing on Text */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 1rem;
+        }
+
+        .tab {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .tab.active {
+            color: var(--text-main);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 2px 2px 0 0;
+        }
+
+        .textarea-wrapper {
+            position: relative;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 250px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: vertical;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Upload area for file (hidden by default in text mode, but let's implement the UI) */
+        .file-upload-area {
+            display: none;
+            border: 2px dashed var(--glass-border);
+            border-radius: 1rem;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        .file-upload-area:hover, .file-upload-area.dragover {
+            border-color: var(--primary);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .file-upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .file-upload-text {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .file-upload-input {
+            display: none;
+        }
+
+        .btn-browse {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-browse:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Action Button */
+        button.primary-btn {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 1.25rem 2.5rem;
+            border-radius: 0.75rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            width: 100%;
+        }
+
+        button.primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.5);
+        }
+
+        button.primary-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        .btn-text {
+            display: inline-block;
+        }
+
+        button.loading .spinner {
+            display: block;
+        }
+
+        button.loading .btn-text {
+            display: none;
+        }
+
+        button.loading {
+            pointer-events: none;
+            opacity: 0.9;
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 1rem;
+        }
+
+        .results-header h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            color: var(--text-main);
+        }
+
+        .skill-count {
+            background: rgba(139, 92, 246, 0.2);
+            color: #d8b4fe; /* Purple 300 */
+            padding: 0.25rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        /* Tags */
+        .skill-tag {
+            background: var(--tag-bg);
+            border: 1px solid var(--tag-border);
+            color: #bfdbfe; /* Blue 200 */
+            padding: 0.5rem 1.25rem;
+            border-radius: 2rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
+        }
+
+        .skill-tag:hover {
+            transform: translateY(-2px);
+            background: rgba(59, 130, 246, 0.3);
+            border-color: #60a5fa;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .skill-tag::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.5s ease;
+        }
+
+        .skill-tag:hover::before {
+            transform: translateX(100%);
+        }
+
+        /* Empty / Error States */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 0;
+            color: var(--text-muted);
+        }
+        
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .error-message {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5; /* Red 300 */
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.5rem; }
+            .glass-card { padding: 1.5rem; }
+            textarea { min-height: 200px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>SpotmySkill</h1>
+            <p>Paste your resume text below, and our advanced NLP engine will instantly identify key professional skills.</p>
+        </header>
+
+        <!-- Input Card -->
+        <main class="glass-card input-section">
+            <div class="tabs">
+                <button class="tab active" id="tab-text">Paste Text</button>
+                <button class="tab" id="tab-file">Upload File</button>
+            </div>
+
+            <!-- Text Input Area -->
+            <div class="textarea-wrapper" id="text-input-area">
+                <textarea id="resume-text" placeholder="Paste resume contents here...&#10;&#10;E.g., Experienced Software Engineer with 5+ years building scalable microservices using Python, FastAPI, and Docker. Proficient in cloud deployment on AWS and GCP..."></textarea>
+            </div>
+
+            <!-- File Upload Area (Hidden by default) -->
+            <div class="file-upload-area" id="file-upload-area">
+                <div class="file-upload-icon">📄</div>
+                <p class="file-upload-text">Drag and drop your resume file (.txt, .pdf, .docx) here</p>
+                <button class="btn-browse" onclick="document.getElementById('file-input').click()">Browse Files</button>
+                <input type="file" id="file-input" class="file-upload-input" accept=".txt,.pdf,.docx,.doc">
+                <p id="file-name-display" style="margin-top: 1rem; color: var(--primary); font-weight: 500;"></p>
+            </div>
+
+            <!-- Optional Filters -->
+            <div class="filters-section" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="domain-input" style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;">Filter by Domain (Optional)</label>
+                    <input type="text" id="domain-input" placeholder="e.g. Software Engineering" style="width: 100%; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--glass-border); border-radius: 0.75rem; padding: 1rem; color: var(--text-main); font-family: inherit; font-size: 1rem; transition: border-color 0.3s ease;">
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="requirement-input" style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;">Job Description / Requirements (Optional - skills will be filtered to match this)</label>
+                    <textarea id="requirement-input" placeholder="Paste company requirement or job description here..." style="width: 100%; min-height: 120px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--glass-border); border-radius: 0.75rem; padding: 1rem; color: var(--text-main); font-family: inherit; font-size: 1rem; resize: vertical; transition: border-color 0.3s ease;"></textarea>
+                </div>
+            </div>
+
+            <div id="error-msg" class="error-message"></div>
+
+            <button id="extract-btn" class="primary-btn">
+                <span class="btn-text" id="btn-label">Extract Skills</span>
+                <div class="spinner"></div>
+            </button>
+        </main>
+
+        <!-- Results Card -->
+        <section id="results-section" class="glass-card results-section">
+            <div class="results-header">
+                <h2>Extracted Skills</h2>
+                <span class="skill-count" id="skill-count-badge">0 Found</span>
+            </div>
+            
+            <div class="skills-container" id="skills-container">
+                <!-- Skills will be injected here -->
+            </div>
+            
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <svg fill="currentColor" viewBox="0 0 24 24"><path d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>
+                <p>No distinguishable skills were found in the provided text.</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const extractBtn = document.getElementById('extract-btn');
+            const resumeText = document.getElementById('resume-text');
+            const resultsSection = document.getElementById('results-section');
+            const skillsContainer = document.getElementById('skills-container');
+            const skillCountBadge = document.getElementById('skill-count-badge');
+            const errorMsg = document.getElementById('error-msg');
+            const emptyState = document.getElementById('empty-state');
+            
+            // Tab switching logic
+            const tabText = document.getElementById('tab-text');
+            const tabFile = document.getElementById('tab-file');
+            const textInputArea = document.getElementById('text-input-area');
+            const fileUploadArea = document.getElementById('file-upload-area');
+            const fileInput = document.getElementById('file-input');
+            const fileNameDisplay = document.getElementById('file-name-display');
+            
+            let currentMode = 'text'; // 'text' or 'file'
+            let selectedFile = null;
+
+            tabText.addEventListener('click', () => {
+                tabText.classList.add('active');
+                tabFile.classList.remove('active');
+                textInputArea.style.display = 'block';
+                fileUploadArea.style.display = 'none';
+                currentMode = 'text';
+                errorMsg.style.display = 'none';
+            });
+
+            tabFile.addEventListener('click', () => {
+                tabFile.classList.add('active');
+                tabText.classList.remove('active');
+                fileUploadArea.style.display = 'block';
+                textInputArea.style.display = 'none';
+                currentMode = 'file';
+                errorMsg.style.display = 'none';
+            });
+
+            // File input handling
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    selectedFile = e.target.files[0];
+                    fileNameDisplay.textContent = `Selected: ${selectedFile.name}`;
+                } else {
+                    selectedFile = null;
+                    fileNameDisplay.textContent = '';
+                }
+            });
+
+            // Drag and drop events
+            fileUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.add('dragover');
+            });
+            
+            fileUploadArea.addEventListener('dragleave', () => {
+                fileUploadArea.classList.remove('dragover');
+            });
+            
+            fileUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.remove('dragover');
+                if (e.dataTransfer.files.length > 0) {
+                    selectedFile = e.dataTransfer.files[0];
+                    fileInput.files = e.dataTransfer.files; // Sync with actual input
+                    fileNameDisplay.textContent = `Selected: ${selectedFile.name}`;
+                }
+            });
+
+            // API Endpoint configuration
+            const API_URL = ''; // Empty string for relative path on Vercel/Production
+
+            extractBtn.addEventListener('click', async () => {
+                // Formatting
+                errorMsg.style.display = 'none';
+                resultsSection.style.display = 'none';
+                
+                // Validation based on mode
+                if (currentMode === 'text' && !resumeText.value.trim()) {
+                    showError("Please paste some resume text first.");
+                    return;
+                }
+                
+                if (currentMode === 'file' && !selectedFile) {
+                    showError("Please select a file to upload.");
+                    return;
+                }
+
+                // Loading State
+                setLoading(true);
+
+                try {
+                    let data;
+                    
+                    if (currentMode === 'text') {
+                        // Text payload
+                        const response = await fetch(`${API_URL}/api/extract_skills`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ 
+                                text: resumeText.value,
+                                domain: document.getElementById('domain-input').value,
+                                company_requirement: document.getElementById('requirement-input').value
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            const errData = await response.json().catch(() => ({}));
+                            throw new Error(errData.detail || `Server error: ${response.status}`);
+                        }
+                        data = await response.json();
+                        
+                    } else {
+                        // File payload
+                        const formData = new FormData();
+                        formData.append('file', selectedFile);
+                        formData.append('domain', document.getElementById('domain-input').value);
+                        formData.append('company_requirement', document.getElementById('requirement-input').value);
+                        
+                        const response = await fetch(`${API_URL}/api/extract_skills_file`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        if (!response.ok) {
+                            const errData = await response.json().catch(() => ({}));
+                            throw new Error(errData.detail || `Server error: ${response.status}`);
+                        }
+                        data = await response.json();
+                    }
+
+                    displayResults(data.skills);
+
+                } catch (error) {
+                    // Try to guess if it's a connection error
+                    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                        showError("Could not connect to the API server. Please ensure the backend is running at " + API_URL);
+                    } else {
+                        showError(error.message || "An unexpected error occurred.");
+                    }
+                    console.error('API Error:', error);
+                } finally {
+                    setLoading(false);
+                }
+            });
+
+            function setLoading(isLoading) {
+                if (isLoading) {
+                    extractBtn.classList.add('loading');
+                } else {
+                    extractBtn.classList.remove('loading');
+                }
+            }
+
+            function showError(message) {
+                errorMsg.textContent = message;
+                errorMsg.style.display = 'block';
+            }
+
+            function displayResults(skills) {
+                resultsSection.style.display = 'block';
+                skillsContainer.innerHTML = '';
+                
+                if (!skills || skills.length === 0) {
+                    emptyState.style.display = 'block';
+                    skillCountBadge.textContent = "0 Found";
+                    skillCountBadge.style.display = 'none';
+                    return;
+                }
+
+                emptyState.style.display = 'none';
+                skillCountBadge.style.display = 'inline-block';
+                skillCountBadge.textContent = `${skills.length} Found`;
+
+                skills.forEach((skill, index) => {
+                    const tag = document.createElement('div');
+                    tag.className = 'skill-tag';
+                    tag.textContent = skill;
+                    // Add staggered animation delay
+                    tag.style.animationDelay = `${index * 0.05}s`;
+                    skillsContainer.appendChild(tag);
+                });
+                
+                // Scroll to results smoothly
+                setTimeout(() => {
+                    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>
