@@ -483,9 +483,22 @@
                 </div>
             </div>
             
-            <div id="results-actions" style="display: none; margin-bottom: 1.5rem; display: flex; gap: 1rem;">
+            <div id="results-actions" style="display: none; margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
                 <button id="copy-btn" class="btn-browse" style="padding: 0.5rem 1rem; font-size: 0.85rem;">📋 Copy to Clipboard</button>
                 <button id="export-btn" class="btn-browse" style="padding: 0.5rem 1rem; font-size: 0.85rem;">📥 Export CSV</button>
+                <button id="track-btn" class="btn-browse" style="padding: 0.5rem 1rem; font-size: 0.85rem; background: linear-gradient(135deg, #8b5cf6, #3b82f6);">👁️ Generate Tracking Link</button>
+            </div>
+
+            <div id="tracking-widget" class="glass-card" style="display: none; margin-bottom: 1.5rem; padding: 1rem; border: 1px solid rgba(139, 92, 246, 0.3);">
+                <h3 style="margin-top: 0; font-size: 1rem; color: #8b5cf6;">Resume Tracker Active</h3>
+                <p style="font-size: 0.85rem; color: #a1a1aa; margin-bottom: 0.5rem;">Share this link with recruiters to track if they view your resume.</p>
+                <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                    <input type="text" id="tracking-link-input" readonly style="flex: 1; padding: 0.5rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 5px; color: white; font-size: 0.85rem;">
+                    <button id="copy-track-link-btn" class="btn-browse" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Copy Link</button>
+                    <div id="view-count-badge" style="background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.5); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: bold;">
+                        👁️ 0 Views
+                    </div>
+                </div>
             </div>
             
             <div class="skills-container" id="skills-container">
@@ -632,9 +645,17 @@
                         }
                         data = await response.json();
                     }
+                    // Store the text for the tracking feature
+                    if (currentMode === 'text') {
+                        currentResumeText = resumeText.value;
+                    } else if (selectedFile && selectedFile.type === 'text/plain') {
+                        const text = await selectedFile.text();
+                        currentResumeText = text;
+                    } else {
+                        currentResumeText = "Binary document uploaded (PDF/Word). Skills extracted: " + data.skills.map(s => s.name).join(', ');
+                    }
 
-                    displayResults(data.skills);
-
+                    displayResults(data);
                 } catch (error) {
                     // Try to guess if it's a connection error
                     if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
@@ -663,11 +684,88 @@
 
             const copyBtn = document.getElementById('copy-btn');
             const exportBtn = document.getElementById('export-btn');
+            const trackBtn = document.getElementById('track-btn');
+            const trackingWidget = document.getElementById('tracking-widget');
+            const trackingLinkInput = document.getElementById('tracking-link-input');
+            const copyTrackLinkBtn = document.getElementById('copy-track-link-btn');
+            const viewCountBadge = document.getElementById('view-count-badge');
+            
             const matchScoreBadge = document.getElementById('match-score-badge');
             const resultsActions = document.getElementById('results-actions');
+            
             let currentSkillsData = [];
+            let currentResumeText = "";
+            let currentTrackingId = null;
+            let trackingPollInterval = null;
 
             // Add inside DOMContentLoaded
+            
+            trackBtn.addEventListener('click', async () => {
+                if (!currentResumeText) return;
+                
+                trackBtn.disabled = true;
+                trackBtn.innerHTML = 'Generating...';
+                
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/track/generate`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            text: currentResumeText,
+                            filename: document.getElementById('resume-file').files[0]?.name || "Pasted Resume"
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    if (data.track_id) {
+                        currentTrackingId = data.track_id;
+                        const trackingUrl = `${window.location.origin}/view/${currentTrackingId}`;
+                        trackingLinkInput.value = trackingUrl;
+                        
+                        trackingWidget.style.display = 'block';
+                        trackBtn.style.display = 'none'; // Hide generate button once created
+                        
+                        // Start polling for views
+                        if (trackingPollInterval) clearInterval(trackingPollInterval);
+                        trackingPollInterval = setInterval(pollTrackingStats, 5000);
+                        pollTrackingStats(); // Initial poll
+                    }
+                } catch (e) {
+                    console.error("Failed to generate tracking link", e);
+                    alert("Failed to generate tracking link. Is the API running?");
+                } finally {
+                    trackBtn.disabled = false;
+                    trackBtn.innerHTML = '👁️ Generate Tracking Link';
+                }
+            });
+            
+            copyTrackLinkBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(trackingLinkInput.value).then(() => {
+                    const originalText = copyTrackLinkBtn.innerHTML;
+                    copyTrackLinkBtn.innerHTML = 'Copied!';
+                    setTimeout(() => copyTrackLinkBtn.innerHTML = originalText, 2000);
+                });
+            });
+            
+            async function pollTrackingStats() {
+                if (!currentTrackingId) return;
+                
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/track/stats/${currentTrackingId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        viewCountBadge.innerHTML = `👁️ ${data.views} Views`;
+                        if (data.views > 0) {
+                            viewCountBadge.style.background = 'rgba(52, 211, 153, 0.2)';
+                            viewCountBadge.style.color = '#6ee7b7';
+                            viewCountBadge.style.borderColor = 'rgba(52, 211, 153, 0.5)';
+                        }
+                    }
+                } catch (e) {
+                    console.error("Failed to poll stats", e);
+                }
+            }
+
             copyBtn.addEventListener('click', () => {
                 if (currentSkillsData.length === 0) return;
                 const textToCopy = currentSkillsData.map(s => `${s.name} (${s.count})`).join(', ');

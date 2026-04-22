@@ -101,6 +101,87 @@ async def extract_skills_file_endpoint(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# --- Resume Tracking Features ---
+import uuid
+import datetime
+
+# In-memory database for tracking (Note: Resets on Vercel cold start)
+# For production, this should be replaced with Redis/Postgres
+tracking_db = {}
+
+class TrackResumeRequest(BaseModel):
+    text: str
+    filename: str = "Resume"
+
+@app.post("/api/track/generate")
+async def generate_tracking_link(request: TrackResumeRequest):
+    """Generates a unique tracking ID for a resume."""
+    track_id = str(uuid.uuid4())[:8] # Short ID
+    
+    tracking_db[track_id] = {
+        "text": request.text,
+        "filename": request.filename,
+        "views": 0,
+        "last_viewed": None,
+        "created_at": datetime.datetime.now().isoformat()
+    }
+    
+    return {"track_id": track_id}
+
+@app.get("/api/track/stats/{track_id}")
+async def get_tracking_stats(track_id: str):
+    """Gets the view statistics for a specific resume."""
+    if track_id not in tracking_db:
+        raise HTTPException(status_code=404, detail="Tracking ID not found")
+        
+    data = tracking_db[track_id]
+    return {
+        "views": data["views"],
+        "last_viewed": data["last_viewed"],
+        "filename": data["filename"]
+    }
+
+@app.get("/view/{track_id}", response_class=HTMLResponse)
+async def view_shared_resume(track_id: str):
+    """The endpoint the recruiter visits. Logs the view and shows the resume."""
+    if track_id not in tracking_db:
+        return HTMLResponse(content="<h1>Resume not found or link expired.</h1>", status_code=404)
+        
+    # Log the view
+    tracking_db[track_id]["views"] += 1
+    tracking_db[track_id]["last_viewed"] = datetime.datetime.now().isoformat()
+    
+    # Render a simple professional view for the recruiter
+    data = tracking_db[track_id]
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{data['filename']}} - SpotmySkill</title>
+        <style>
+            body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; background: #f9fafb; }}
+            .container {{ background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }}
+            h1 {{ color: #4f46e5; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }}
+            .footer {{ margin-top: 40px; text-align: center; color: #6b7280; font-size: 0.8em; }}
+            pre {{ white-space: pre-wrap; font-family: inherit; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>{{data['filename']}}</h1>
+            <pre>{{data['text'][:2000]}}... [Resume Truncated for Preview]</pre>
+        </div>
+        <div class="footer">
+            Shared securely via SpotmySkill AI
+        </div>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
