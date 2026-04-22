@@ -3,52 +3,83 @@ from spacy.pipeline import EntityRuler
 import json
 import os
 
+# Extended noise words that should NEVER be extracted as skills.
+# These are resume-filler words that leak through from the vocab.
+NOISE_WORDS = {
+    # Common English stop words
+    "the", "with", "users", "user", "and", "or", "for", "in", "to", "a", "an",
+    "of", "on", "at", "by", "is", "are", "was", "were", "be", "been", "being",
+    "it", "its", "this", "that", "we", "they", "he", "she", "you", "i", "me",
+    # Resume filler / generic words
+    "proficient", "proficient in", "experienced", "experience", "experience in",
+    "experiences", "expert", "expertise", "knowledge", "understanding",
+    "years", "year", "month", "months", "5 years of", "years of",
+    "years of experience", "responsible", "responsible for",
+    "excellent", "strong", "good", "well", "able", "hands",
+    "senior", "junior", "lead", "work", "working", "skills",
+    "team", "management", "project", "projects", "support",
+    "develop", "developed", "developing", "development",
+    "design", "system", "systems", "data", "tools", "tool",
+    "new", "high", "based", "full", "key", "set", "part",
+    "level", "type", "end", "run", "test", "build", "plan",
+    "help", "need", "range", "time", "best", "large", "small",
+    "open", "close", "step", "area", "role", "field", "line",
+    "rest", "cloud", "deployment", "day", "day-to-day",
+}
+
+
 class SkillExtractor:
-    def __init__(self, model_name="en_core_web_sm", vocab_path="model/skill_vocab.json"):
+    def __init__(self, vocab_path=None):
         # Load the base spaCy model
         try:
-            self.nlp = spacy.load(model_name)
+            self.nlp = spacy.load("en_core_web_sm")
         except OSError:
-            print(f"Model '{model_name}' not found. Please run: python -m spacy download {model_name}")
+            print("Model 'en_core_web_sm' not found. Please run: python -m spacy download en_core_web_sm")
             raise
             
         # Add the EntityRuler to the pipeline
         # We put it before 'ner' so that our rules take precedence over general English entities
         self.ruler = self.nlp.add_pipe("entity_ruler", before="ner")
         
+        # Resolve vocab path
+        if vocab_path is None:
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            vocab_path = os.path.join(current_dir, "skill_vocab.json")
+        
         # Load our extracted skills vocabulary
-        # Use an absolute path relative to this file
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        vocab_path_full = os.path.join(current_dir, "skill_vocab.json")
         try:
-            with open(vocab_path_full, "r", encoding="utf-8") as f:
+            with open(vocab_path, "r", encoding="utf-8") as f:
                 skill_vocab = json.load(f)
         except FileNotFoundError:
-            print(f"Warning: Skill vocab file not found at {vocab_path_full}")
+            print(f"Warning: Skill vocab file not found at {vocab_path}")
             skill_vocab = []
 
         # Create patterns for each skill phrase
         patterns = []
         for skill in skill_vocab:
-            # Simple exact match (case insensitive approach built into EntityRuler using lowercasing if configured,
-            # or we can just supply the string pattern. Spacy's default string pattern matches exact case,
-            # so we'll match lowercase via LOWER attribute for resilience)
-            # A more robust pattern matches tokens ignoring case:
-            # We split the skill term by spaces to match individual tokens
-            tokens = skill.split()
-            pattern = [{"LOWER": {"IN": [t.lower(), t]}} for t in tokens if t]
+            skill_clean = skill.strip()
+            if not skill_clean:
+                continue
             
-            # Use 'SKILL' as the entity label
-            patterns.append({"label": "SKILL", "pattern": pattern})
+            # Skip noise words at vocab-load time too
+            if skill_clean.lower() in NOISE_WORDS:
+                continue
+            
+            # Skip single characters unless they are known single-char skills
+            if len(skill_clean) <= 1 and skill_clean.lower() not in ('c', 'r'):
+                continue
+            
+            # Build token-level pattern: match each token case-insensitively
+            # using the LOWER attribute (expects a plain string value)
+            tokens = skill_clean.split()
+            pattern = [{"LOWER": t.lower()} for t in tokens if t]
+            
+            if pattern:
+                patterns.append({"label": "SKILL", "pattern": pattern})
         
-        # We don't want to load all 11k skills if some are noisy. 
-        # But letting EntityRuler handle them is highly efficient.
-        # Ensure we only load non-empty patterns
-        valid_patterns = [p for p in patterns if p["pattern"]]
-        
-        if valid_patterns:
-            self.ruler.add_patterns(valid_patterns)
-            print(f"Loaded {len(valid_patterns)} skill patterns into EntityRuler.")
+        if patterns:
+            self.ruler.add_patterns(patterns)
+            print(f"Loaded {len(patterns)} skill patterns into EntityRuler.")
             
     def _extract_raw_skills(self, text):
         if not text:
@@ -56,19 +87,17 @@ class SkillExtractor:
         doc = self.nlp(text)
         extracted = set()
         
-        # Basic list of persistent stop words just in case
-        stop_words = {"the", "with", "users", "user", "and", "or", "for", "in", "to", "a"}
-        
         for ent in doc.ents:
             if ent.label_ == "SKILL":
                 skill_text = ent.text.strip()
                 skill_lower = skill_text.lower()
                 
-                if skill_lower in stop_words:
+                # Final runtime filter for noise
+                if skill_lower in NOISE_WORDS:
                     continue
                     
-                # Ignore single character skills unless they are specifically common like 'c' or 'r'
-                if len(skill_text) <= 1 and skill_lower not in ['c', 'r']:
+                # Ignore single character skills unless they are specifically common like 'C' or 'R'
+                if len(skill_text) <= 1 and skill_lower not in ('c', 'r'):
                     continue
                     
                 extracted.add(skill_text)
@@ -93,11 +122,11 @@ class SkillExtractor:
                         matched_skills.add(s)
                 return sorted(list(matched_skills))
             
-            # If they provided requirements but NO skills could be extracted from them,
-            # we might want to still return the resume skills, or empty list.
-            # Usually it's better to return empty if they strictly filtered, 
-            # but to be safe we'll fallback to returning empty list since they wanted intersection.
-            return []
+            # If they provided requirements but NO skills could be extracted from the
+            # requirement text, fall back to returning all resume skills rather than
+            # an empty list — the requirement text might just be a plain description
+            # without recognisable skill tokens.
+            return sorted(list(resume_skills))
             
         return sorted(list(resume_skills))
 

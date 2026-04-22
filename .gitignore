@@ -1,0 +1,40 @@
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Large data files
+*.parquet
+data/skills_dataset.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel/
+
+# Logs
+*.log
+
+# Exploration scripts output
+explore_output*.txt
+explore_prompts.txt
+
+# Testing
+.pytest_cache/
+
+# Documentation PDFs (optional, uncomment if not wanted in repo)
+# *.pdf
