@@ -1,0 +1,15 @@
+# Exclude large datasets and research scripts from Vercel deployment
+venv/
+data/
+*.parquet
+explore_*.py
+explore_out*.txt
+explore_prompts.txt
+test_api.py
+requirements-old.txt
+.vscode/
+.idea/
+*.log
+__pycache__/
+.pytest_cache/
+.vercel/
