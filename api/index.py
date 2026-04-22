@@ -48,8 +48,13 @@ def extract_skills_endpoint(resume: ResumeText):
         # Import lazily to avoid startup timeout
         from model.skill_extractor import get_extractor
         extractor = get_extractor()
-        skills = extractor.extract_skills(resume.text, domain=resume.domain, company_requirement=resume.company_requirement)
-        return {"skills": skills, "count": len(skills)}
+        skills_data = extractor.extract_skills(resume.text, domain=resume.domain, company_requirement=resume.company_requirement)
+        return {
+            "skills": skills_data["skills"], 
+            "count": len(skills_data["skills"]),
+            "match_score": skills_data["match_score"],
+            "total_required": skills_data["total_required"]
+        }
     except Exception as e:
         import traceback
         error_details = traceback.format_exc()
@@ -84,8 +89,13 @@ async def extract_skills_file_endpoint(
         # Import lazily
         from model.skill_extractor import get_extractor
         extractor = get_extractor()
-        skills = extractor.extract_skills(text, domain=domain, company_requirement=company_requirement)
-        return {"skills": skills, "count": len(skills)}
+        skills_data = extractor.extract_skills(text, domain=domain, company_requirement=company_requirement)
+        return {
+            "skills": skills_data["skills"], 
+            "count": len(skills_data["skills"]),
+            "match_score": skills_data["match_score"],
+            "total_required": skills_data["total_required"]
+        }
     except UnicodeDecodeError:
         raise HTTPException(status_code=400, detail="Unable to decode file. Please upload a .pdf, .docx, or .txt file.")
     except Exception as e:

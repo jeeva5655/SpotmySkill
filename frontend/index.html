@@ -477,7 +477,15 @@
         <section id="results-section" class="glass-card results-section">
             <div class="results-header">
                 <h2>Extracted Skills</h2>
-                <span class="skill-count" id="skill-count-badge">0 Found</span>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <span id="match-score-badge" class="skill-count" style="display: none; background: rgba(52, 211, 153, 0.2); color: #6ee7b7; border: 1px solid rgba(52, 211, 153, 0.5);">100% Match</span>
+                    <span class="skill-count" id="skill-count-badge">0 Found</span>
+                </div>
+            </div>
+            
+            <div id="results-actions" style="display: none; margin-bottom: 1.5rem; display: flex; gap: 1rem;">
+                <button id="copy-btn" class="btn-browse" style="padding: 0.5rem 1rem; font-size: 0.85rem;">📋 Copy to Clipboard</button>
+                <button id="export-btn" class="btn-browse" style="padding: 0.5rem 1rem; font-size: 0.85rem;">📥 Export CSV</button>
             </div>
             
             <div class="skills-container" id="skills-container">
@@ -653,25 +661,97 @@
                 errorMsg.style.display = 'block';
             }
 
-            function displayResults(skills) {
+            const copyBtn = document.getElementById('copy-btn');
+            const exportBtn = document.getElementById('export-btn');
+            const matchScoreBadge = document.getElementById('match-score-badge');
+            const resultsActions = document.getElementById('results-actions');
+            let currentSkillsData = [];
+
+            // Add inside DOMContentLoaded
+            copyBtn.addEventListener('click', () => {
+                if (currentSkillsData.length === 0) return;
+                const textToCopy = currentSkillsData.map(s => `${s.name} (${s.count})`).join(', ');
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '✅ Copied!';
+                    setTimeout(() => copyBtn.innerHTML = originalText, 2000);
+                });
+            });
+
+            exportBtn.addEventListener('click', () => {
+                if (currentSkillsData.length === 0) return;
+                let csvContent = "data:text/csv;charset=utf-8,Skill Name,Frequency\n";
+                currentSkillsData.forEach(row => {
+                    // Escape quotes and commas
+                    let name = row.name.replace(/"/g, '""');
+                    if (name.includes(',')) name = `"${name}"`;
+                    csvContent += `${name},${row.count}\n`;
+                });
+                
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "extracted_skills.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+
+            function displayResults(data) {
                 resultsSection.style.display = 'block';
                 skillsContainer.innerHTML = '';
                 
-                if (!skills || skills.length === 0) {
+                const skills = data.skills || data; // Fallback for old format
+                currentSkillsData = Array.isArray(skills) && typeof skills[0] === 'object' ? skills : skills.map(s => ({name: s, count: 1}));
+                
+                if (!currentSkillsData || currentSkillsData.length === 0) {
                     emptyState.style.display = 'block';
                     skillCountBadge.textContent = "0 Found";
                     skillCountBadge.style.display = 'none';
+                    resultsActions.style.display = 'none';
+                    matchScoreBadge.style.display = 'none';
                     return;
                 }
 
                 emptyState.style.display = 'none';
                 skillCountBadge.style.display = 'inline-block';
-                skillCountBadge.textContent = `${skills.length} Found`;
+                skillCountBadge.textContent = `${currentSkillsData.length} Found`;
+                resultsActions.style.display = 'flex';
+                
+                if (data.match_score !== undefined && data.match_score !== null) {
+                    matchScoreBadge.style.display = 'inline-block';
+                    matchScoreBadge.textContent = `${data.match_score}% ATS Match`;
+                    
+                    // Color code based on score
+                    if (data.match_score >= 80) {
+                        matchScoreBadge.style.background = 'rgba(52, 211, 153, 0.2)';
+                        matchScoreBadge.style.color = '#6ee7b7';
+                        matchScoreBadge.style.borderColor = 'rgba(52, 211, 153, 0.5)';
+                    } else if (data.match_score >= 50) {
+                        matchScoreBadge.style.background = 'rgba(251, 191, 36, 0.2)';
+                        matchScoreBadge.style.color = '#fcd34d';
+                        matchScoreBadge.style.borderColor = 'rgba(251, 191, 36, 0.5)';
+                    } else {
+                        matchScoreBadge.style.background = 'rgba(239, 68, 68, 0.2)';
+                        matchScoreBadge.style.color = '#fca5a5';
+                        matchScoreBadge.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+                    }
+                } else {
+                    matchScoreBadge.style.display = 'none';
+                }
 
-                skills.forEach((skill, index) => {
+                currentSkillsData.forEach((skill, index) => {
                     const tag = document.createElement('div');
                     tag.className = 'skill-tag';
-                    tag.textContent = skill;
+                    
+                    // Highlight highly frequent skills
+                    if (skill.count > 2) {
+                        tag.style.borderColor = 'var(--accent)';
+                        tag.style.boxShadow = '0 0 10px rgba(139, 92, 246, 0.3)';
+                    }
+                    
+                    tag.innerHTML = `${skill.name} <span style="opacity:0.6; font-size:0.8em; margin-left:6px; background:rgba(0,0,0,0.2); padding:2px 6px; border-radius:10px;">${skill.count}</span>`;
+                    
                     // Add staggered animation delay
                     tag.style.animationDelay = `${index * 0.05}s`;
                     skillsContainer.appendChild(tag);

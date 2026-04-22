@@ -83,9 +83,9 @@ class SkillExtractor:
             
     def _extract_raw_skills(self, text):
         if not text:
-            return set()
+            return {}
         doc = self.nlp(text)
-        extracted = set()
+        extracted = {}
         
         for ent in doc.ents:
             if ent.label_ == "SKILL":
@@ -99,36 +99,69 @@ class SkillExtractor:
                 # Ignore single character skills unless they are specifically common like 'C' or 'R'
                 if len(skill_text) <= 1 and skill_lower not in ('c', 'r'):
                     continue
+                
+                # Normalize capitalization to the most common format we see
+                # We'll use the title case or original case if it's an acronym
+                normalized_skill = skill_text if skill_text.isupper() else skill_text.title()
+                
+                # We use lowercased key for tracking to avoid duplicates like Python vs python
+                if skill_lower not in extracted:
+                    extracted[skill_lower] = {"name": normalized_skill, "count": 1}
+                else:
+                    extracted[skill_lower]["count"] += 1
                     
-                extracted.add(skill_text)
         return extracted
 
     def extract_skills(self, text, domain="", company_requirement=""):
-        resume_skills = self._extract_raw_skills(text)
+        resume_skills_dict = self._extract_raw_skills(text)
         
         req_text = f"{domain} {company_requirement}".strip()
+        match_score = None
         
         if req_text:
-            req_skills = self._extract_raw_skills(req_text)
+            req_skills_dict = self._extract_raw_skills(req_text)
             
-            if req_skills:
-                # Lowercase requirements for robust matching
-                req_skills_lower = {s.lower() for s in req_skills}
-                
+            if req_skills_dict:
                 # Perform intersection
-                matched_skills = set()
-                for s in resume_skills:
-                    if s.lower() in req_skills_lower:
-                        matched_skills.add(s)
-                return sorted(list(matched_skills))
+                matched_skills = []
+                req_skills_lower = set(req_skills_dict.keys())
+                
+                for s_lower, skill_data in resume_skills_dict.items():
+                    if s_lower in req_skills_lower:
+                        matched_skills.append(skill_data)
+                
+                # Calculate ATS Match Score
+                total_reqs = len(req_skills_lower)
+                matched_reqs = len(matched_skills)
+                if total_reqs > 0:
+                    match_score = round((matched_reqs / total_reqs) * 100)
+                
+                # Sort by frequency, then alphabetically
+                matched_skills.sort(key=lambda x: (-x["count"], x["name"]))
+                
+                return {
+                    "skills": matched_skills,
+                    "match_score": match_score,
+                    "total_required": total_reqs
+                }
             
-            # If they provided requirements but NO skills could be extracted from the
-            # requirement text, fall back to returning all resume skills rather than
-            # an empty list — the requirement text might just be a plain description
-            # without recognisable skill tokens.
-            return sorted(list(resume_skills))
+            # If they provided requirements but NO skills could be extracted
+            # fall back to all resume skills
+            all_skills = list(resume_skills_dict.values())
+            all_skills.sort(key=lambda x: (-x["count"], x["name"]))
+            return {
+                "skills": all_skills,
+                "match_score": None,
+                "total_required": 0
+            }
             
-        return sorted(list(resume_skills))
+        all_skills = list(resume_skills_dict.values())
+        all_skills.sort(key=lambda x: (-x["count"], x["name"]))
+        return {
+            "skills": all_skills,
+            "match_score": None,
+            "total_required": 0
+        }
 
 # Singleton instance for the API
 # We will initialize this lazily in the FastAPI app to avoid loading latency on import
