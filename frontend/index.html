@@ -582,8 +582,7 @@
                 }
             });
 
-            // API Endpoint configuration
-            const API_URL = ''; // Empty string for relative path on Vercel/Production
+            const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000' : '';
 
             extractBtn.addEventListener('click', async () => {
                 // Formatting
@@ -707,12 +706,12 @@
                 trackBtn.innerHTML = 'Generating...';
                 
                 try {
-                    const response = await fetch(`${API_BASE_URL}/api/track/generate`, {
+                    const response = await fetch(`${API_URL}/api/track/generate`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             text: currentResumeText,
-                            filename: document.getElementById('resume-file').files[0]?.name || "Pasted Resume"
+                            filename: document.getElementById('resume-file')?.files?.[0]?.name || "Pasted Resume"
                         })
                     });
                     
@@ -751,7 +750,7 @@
                 if (!currentTrackingId) return;
                 
                 try {
-                    const response = await fetch(`${API_BASE_URL}/api/track/stats/${currentTrackingId}`);
+                    const response = await fetch(`${API_URL}/api/track/stats/${currentTrackingId}`);
                     if (response.ok) {
                         const data = await response.json();
                         viewCountBadge.innerHTML = `👁️ ${data.views} Views`;
