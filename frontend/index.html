@@ -797,53 +797,6 @@
         .stat-num { font-size: 3.5rem; font-weight: 800; font-family: 'Outfit', sans-serif; color: #d8b4fe; margin-bottom: 0.5rem; display: block; }
         .stat-label { color: var(--text-muted); font-size: 1rem; font-weight: 500; }
 
-        /* Pricing */
-        .pricing {
-            width: 100%;
-            max-width: 1000px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            padding: 0 2rem;
-        }
-        .pricing-card {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 3rem;
-            border-radius: 1.5rem;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-        }
-        .pricing-card h3 { font-size: 1.5rem; color: var(--text-main); font-family: 'Outfit', sans-serif; margin-bottom: 0.5rem; }
-        .pricing-card p { color: var(--text-muted); margin-bottom: 1.5rem; }
-        .pricing-card.pro {
-            background: linear-gradient(180deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
-            border-color: rgba(168, 85, 247, 0.5);
-            box-shadow: 0 0 30px rgba(168, 85, 247, 0.15);
-            position: relative;
-        }
-        .pricing-card.pro::before {
-            content: 'Most Popular';
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, #a855f7, #ec4899);
-            padding: 0.4rem 1.2rem;
-            border-radius: 2rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: white;
-            box-shadow: 0 5px 15px rgba(236, 72, 153, 0.3);
-        }
-        .price { font-size: 4rem; font-family: 'Outfit', sans-serif; font-weight: 800; margin: 1rem 0 2rem; color: white; display: block; }
-        .price span { font-size: 1.2rem; color: var(--text-muted); font-weight: 400; }
-        .pricing-list { list-style: none; margin: 0 0 2.5rem 0; padding: 0; text-align: left; flex-grow: 1; }
-        .pricing-list li { margin-bottom: 1rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.75rem; }
-        .pricing-list li::before { content: '✓'; color: #a855f7; font-weight: bold; background: rgba(168,85,247,0.1); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
-        
         /* Blog */
         .blog {
             width: 100%;
@@ -909,7 +862,6 @@
             <a href="#features">Features</a>
             <a href="#solutions">Solutions</a>
             <a href="#showcase">Showcase</a>
-            <a href="#pricing">Pricing</a>
             <a href="#blog">Blog</a>
         </div>
         <a href="#app" class="btn-outline">Get Started</a>
@@ -1026,38 +978,6 @@
         <div class="stat-card">
             <span class="stat-num">500+</span>
             <span class="stat-label">Curated Skills Dictionary</span>
-        </div>
-    </section>
-
-    <!-- Pricing Section -->
-    <div id="pricing" class="section-header">
-        <h2>Transparent Pricing</h2>
-        <p>Start extracting skills immediately for free, or upgrade to access API integrations and batch processing.</p>
-    </div>
-    <section class="pricing">
-        <div class="pricing-card">
-            <h3>Basic Plan</h3>
-            <p>For job seekers and casual users</p>
-            <span class="price">Free<span>/forever</span></span>
-            <ul class="pricing-list">
-                <li>Up to 15 resume parses per day</li>
-                <li>Basic skill extraction (JSON export)</li>
-                <li>Manual copy-paste text support</li>
-                <li>Standard email support</li>
-            </ul>
-            <a href="#app" class="btn-outline" style="display:inline-block; margin-top:auto;">Start Free</a>
-        </div>
-        <div class="pricing-card pro">
-            <h3>Pro Plan</h3>
-            <p>For recruiters and agencies</p>
-            <span class="price">$29<span>/month</span></span>
-            <ul class="pricing-list">
-                <li>Unlimited resume parses</li>
-                <li>PDF and Docx batch uploading</li>
-                <li>Recruiter tracking links & view logs</li>
-                <li>REST API access (10k requests/mo)</li>
-            </ul>
-            <a href="#app" class="btn-cyan" style="display:inline-block; margin-top:auto;">Upgrade to Pro</a>
         </div>
     </section>
 
