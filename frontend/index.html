@@ -483,7 +483,7 @@
                 </div>
             </div>
             
-            <div id="results-actions" style="display: none; margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div id="results-actions" style="display: none; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap;">
                 <button id="copy-btn" class="btn-browse" style="padding: 0.5rem 1rem; font-size: 0.85rem;">📋 Copy to Clipboard</button>
                 <button id="export-btn" class="btn-browse" style="padding: 0.5rem 1rem; font-size: 0.85rem;">📥 Export CSV</button>
                 <button id="track-btn" class="btn-browse" style="padding: 0.5rem 1rem; font-size: 0.85rem; background: linear-gradient(135deg, #8b5cf6, #3b82f6); color: white; border: none;">👁️ Generate Tracking Link</button>
@@ -582,7 +582,9 @@
                 }
             });
 
-            const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000' : '';
+            const isLocalFile = window.location.protocol === 'file:';
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const API_URL = (isLocalFile || isLocalhost) ? 'http://127.0.0.1:8000' : '';
 
             extractBtn.addEventListener('click', async () => {
                 // Formatting
@@ -711,14 +713,15 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             text: currentResumeText,
-                            filename: document.getElementById('resume-file')?.files?.[0]?.name || "Pasted Resume"
+                            filename: selectedFile?.name || "Pasted Resume"
                         })
                     });
                     
                     const data = await response.json();
                     if (data.track_id) {
                         currentTrackingId = data.track_id;
-                        const trackingUrl = `${window.location.origin}/view/${currentTrackingId}`;
+                        const baseOrigin = (window.location.protocol === 'file:') ? 'http://127.0.0.1:8000' : window.location.origin;
+                        const trackingUrl = `${baseOrigin}/view/${currentTrackingId}`;
                         trackingLinkInput.value = trackingUrl;
                         
                         trackingWidget.style.display = 'block';
@@ -758,6 +761,27 @@
                             viewCountBadge.style.background = 'rgba(52, 211, 153, 0.2)';
                             viewCountBadge.style.color = '#6ee7b7';
                             viewCountBadge.style.borderColor = 'rgba(52, 211, 153, 0.5)';
+                            
+                            // Show view log with timestamps
+                            let logHTML = '';
+                            if (data.view_log && data.view_log.length > 0) {
+                                logHTML = '<div style="margin-top: 0.75rem; font-size: 0.8rem; color: #94a3b8;">';
+                                logHTML += '<strong style="color: #6ee7b7;">View History:</strong><br>';
+                                data.view_log.slice(-5).forEach((entry, i) => {
+                                    const d = new Date(entry.timestamp);
+                                    logHTML += `<span style="margin-left: 0.5rem;">• ${d.toLocaleString()}</span><br>`;
+                                });
+                                if (data.view_log.length > 5) logHTML += `<span style="margin-left: 0.5rem; opacity: 0.6;">...and ${data.view_log.length - 5} more</span><br>`;
+                                logHTML += '</div>';
+                            }
+                            
+                            let existingLog = document.getElementById('view-log-section');
+                            if (!existingLog) {
+                                existingLog = document.createElement('div');
+                                existingLog.id = 'view-log-section';
+                                trackingWidget.appendChild(existingLog);
+                            }
+                            existingLog.innerHTML = logHTML;
                         }
                     }
                 } catch (e) {
