@@ -723,6 +723,153 @@
             line-height: 1.5;
         }
 
+        /* General Section Styles */
+        .section-header {
+            text-align: center;
+            margin: 6rem auto 3rem;
+            max-width: 800px;
+            padding: 0 2rem;
+        }
+        .section-header h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3rem;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #e2e8f0, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        /* Solutions */
+        .solutions {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            padding: 0 2rem;
+        }
+        .solution-card {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 3rem;
+            border-radius: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .solution-card:hover {
+            background: rgba(30, 41, 59, 0.6);
+            border-color: rgba(56, 189, 248, 0.3);
+            transform: translateY(-5px);
+        }
+        .solution-card h3 { font-size: 1.8rem; margin-bottom: 1rem; color: #38bdf8; font-family: 'Outfit', sans-serif; }
+        .solution-card p { color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem; }
+        .solution-card ul { list-style: none; padding: 0; color: var(--text-muted); }
+        .solution-card ul li { margin-bottom: 0.8rem; display: flex; align-items: flex-start; gap: 0.5rem; }
+        .solution-card ul li::before { content: '✓'; color: #34d399; font-weight: bold; }
+
+        /* Showcase / Stats */
+        .showcase {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            padding: 0 2rem;
+            text-align: center;
+        }
+        .stat-card {
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            padding: 2.5rem 1rem;
+            border-radius: 1rem;
+            transition: all 0.3s;
+        }
+        .stat-card:hover { border-color: rgba(139, 92, 246, 0.5); transform: translateY(-3px); background: rgba(139, 92, 246, 0.1); }
+        .stat-num { font-size: 3.5rem; font-weight: 800; font-family: 'Outfit', sans-serif; color: #d8b4fe; margin-bottom: 0.5rem; display: block; }
+        .stat-label { color: var(--text-muted); font-size: 1rem; font-weight: 500; }
+
+        /* Pricing */
+        .pricing {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            padding: 0 2rem;
+        }
+        .pricing-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 3rem;
+            border-radius: 1.5rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+        .pricing-card h3 { font-size: 1.5rem; color: var(--text-main); font-family: 'Outfit', sans-serif; margin-bottom: 0.5rem; }
+        .pricing-card p { color: var(--text-muted); margin-bottom: 1.5rem; }
+        .pricing-card.pro {
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+            border-color: rgba(168, 85, 247, 0.5);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.15);
+            position: relative;
+        }
+        .pricing-card.pro::before {
+            content: 'Most Popular';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            padding: 0.4rem 1.2rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 5px 15px rgba(236, 72, 153, 0.3);
+        }
+        .price { font-size: 4rem; font-family: 'Outfit', sans-serif; font-weight: 800; margin: 1rem 0 2rem; color: white; display: block; }
+        .price span { font-size: 1.2rem; color: var(--text-muted); font-weight: 400; }
+        .pricing-list { list-style: none; margin: 0 0 2.5rem 0; padding: 0; text-align: left; flex-grow: 1; }
+        .pricing-list li { margin-bottom: 1rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.75rem; }
+        .pricing-list li::before { content: '✓'; color: #a855f7; font-weight: bold; background: rgba(168,85,247,0.1); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+        
+        /* Blog */
+        .blog {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            padding: 0 2rem;
+        }
+        .blog-card {
+            background: rgba(30, 41, 59, 0.4);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .blog-card:hover { border-color: rgba(56, 189, 248, 0.4); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .blog-img { height: 220px; background: rgba(15,23,42,0.8); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.1); font-size: 3rem; }
+        .blog-content { padding: 2rem; }
+        .blog-content h4 { font-size: 1.3rem; color: var(--text-main); margin-bottom: 0.75rem; font-family: 'Outfit', sans-serif; line-height: 1.4; }
+        .blog-content p { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem; }
+        .blog-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; }
+        .blog-meta .tag { color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 0.2rem 0.6rem; border-radius: 1rem; }
+
         /* Adjust App Section */
         .app-section {
             width: 100%;
@@ -827,6 +974,131 @@
             <div class="feature-icon">👍</div>
             <h3>Get Endorsed</h3>
             <p>Get endorsed and a past-level foundation, and endorse project thumbnails.</p>
+        </div>
+    </section>
+
+    <!-- Solutions Section -->
+    <div id="solutions" class="section-header">
+        <h2>Tailored Solutions</h2>
+        <p>Whether you're hunting for a job or hunting for talent, our NLP pipeline provides actionable insights instantly.</p>
+    </div>
+    <section class="solutions">
+        <div class="solution-card">
+            <h3>For Candidates</h3>
+            <p>Optimize your resume for any Applicant Tracking System (ATS). See exactly how a machine reads your experience.</p>
+            <ul>
+                <li>Instantly identify missing keywords from job descriptions</li>
+                <li>Compare your skill profile against industry standards</li>
+                <li>Track when recruiters actually view your shared resume</li>
+                <li>Generate beautiful shareable skill-summary links</li>
+            </ul>
+        </div>
+        <div class="solution-card">
+            <h3 style="color:#a855f7;">For Recruiters</h3>
+            <p>Stop reading every single bullet point. Upload a batch of resumes and let SpotmySkill rank them by relevance.</p>
+            <ul>
+                <li>Extract hard and soft skills in sub-seconds</li>
+                <li>Normalize skill variants (e.g. "JS" -> "JavaScript")</li>
+                <li>Export structured JSON or CSV data for your ATS</li>
+                <li>Deduplicate candidate entries automatically</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Showcase Section -->
+    <div id="showcase" class="section-header">
+        <h2>Showcase & Impact</h2>
+        <p>Numbers speak louder than words. Our extraction engine has been rigorously tested and widely adopted.</p>
+    </div>
+    <section class="showcase">
+        <div class="stat-card">
+            <span class="stat-num">98%</span>
+            <span class="stat-label">Extraction Accuracy</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-num">12k+</span>
+            <span class="stat-label">Resumes Analyzed</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-num">0.2s</span>
+            <span class="stat-label">Average Processing Time</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-num">500+</span>
+            <span class="stat-label">Curated Skills Dictionary</span>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <div id="pricing" class="section-header">
+        <h2>Transparent Pricing</h2>
+        <p>Start extracting skills immediately for free, or upgrade to access API integrations and batch processing.</p>
+    </div>
+    <section class="pricing">
+        <div class="pricing-card">
+            <h3>Basic Plan</h3>
+            <p>For job seekers and casual users</p>
+            <span class="price">Free<span>/forever</span></span>
+            <ul class="pricing-list">
+                <li>Up to 15 resume parses per day</li>
+                <li>Basic skill extraction (JSON export)</li>
+                <li>Manual copy-paste text support</li>
+                <li>Standard email support</li>
+            </ul>
+            <a href="#app" class="btn-outline" style="display:inline-block; margin-top:auto;">Start Free</a>
+        </div>
+        <div class="pricing-card pro">
+            <h3>Pro Plan</h3>
+            <p>For recruiters and agencies</p>
+            <span class="price">$29<span>/month</span></span>
+            <ul class="pricing-list">
+                <li>Unlimited resume parses</li>
+                <li>PDF and Docx batch uploading</li>
+                <li>Recruiter tracking links & view logs</li>
+                <li>REST API access (10k requests/mo)</li>
+            </ul>
+            <a href="#app" class="btn-cyan" style="display:inline-block; margin-top:auto;">Upgrade to Pro</a>
+        </div>
+    </section>
+
+    <!-- Blog Section -->
+    <div id="blog" class="section-header">
+        <h2>Latest Insights</h2>
+        <p>Stay updated on the latest trends in resume optimization, ATS algorithms, and career growth.</p>
+    </div>
+    <section class="blog">
+        <div class="blog-card">
+            <div class="blog-img">📄</div>
+            <div class="blog-content">
+                <h4>How to Beat the ATS in 2026</h4>
+                <p>Applicant Tracking Systems are getting smarter. Learn how to format your resume so NLP parsers can easily extract your top skills.</p>
+                <div class="blog-meta">
+                    <span>Oct 12, 2026</span>
+                    <span class="tag">Career Advice</span>
+                </div>
+            </div>
+        </div>
+        <div class="blog-card">
+            <div class="blog-img" style="background:rgba(168,85,247,0.2); color:#a855f7;">🤖</div>
+            <div class="blog-content">
+                <h4>The Rise of AI in Hiring</h4>
+                <p>AI is transforming recruitment. We dive into how companies use machine learning to filter and rank candidates automatically.</p>
+                <div class="blog-meta">
+                    <span>Oct 05, 2026</span>
+                    <span class="tag">AI & Tech</span>
+                </div>
+            </div>
+        </div>
+        <div class="blog-card">
+            <div class="blog-img" style="background:rgba(56,189,248,0.2); color:#38bdf8;">📈</div>
+            <div class="blog-content">
+                <h4>Top Skills Employers Want</h4>
+                <p>Based on our analysis of over 10,000 job descriptions, these are the top 10 technical and soft skills companies are hiring for right now.</p>
+                <div class="blog-meta">
+                    <span>Sep 28, 2026</span>
+                    <span class="tag">Industry Data</span>
+                </div>
+            </div>
         </div>
     </section>
 
