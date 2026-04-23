@@ -114,6 +114,8 @@ class SkillExtractor:
 
     def extract_skills(self, text, domain="", company_requirement=""):
         resume_skills_dict = self._extract_raw_skills(text)
+        all_skills = list(resume_skills_dict.values())
+        all_skills.sort(key=lambda x: (-x["count"], x["name"]))
         
         req_text = f"{domain} {company_requirement}".strip()
         match_score = None
@@ -124,11 +126,14 @@ class SkillExtractor:
             if req_skills_dict:
                 # Perform intersection
                 matched_skills = []
+                missing_skills = []
                 req_skills_lower = set(req_skills_dict.keys())
                 
-                for s_lower, skill_data in resume_skills_dict.items():
-                    if s_lower in req_skills_lower:
-                        matched_skills.append(skill_data)
+                for s_lower, skill_data in req_skills_dict.items():
+                    if s_lower in resume_skills_dict:
+                        matched_skills.append(resume_skills_dict[s_lower])
+                    else:
+                        missing_skills.append(skill_data)
                 
                 # Calculate ATS Match Score
                 total_reqs = len(req_skills_lower)
@@ -138,27 +143,20 @@ class SkillExtractor:
                 
                 # Sort by frequency, then alphabetically
                 matched_skills.sort(key=lambda x: (-x["count"], x["name"]))
+                missing_skills.sort(key=lambda x: (-x["count"], x["name"]))
                 
                 return {
-                    "skills": matched_skills,
+                    "skills": all_skills,
+                    "matched_skills": matched_skills,
+                    "missing_skills": missing_skills,
                     "match_score": match_score,
                     "total_required": total_reqs
                 }
-            
-            # If they provided requirements but NO skills could be extracted
-            # fall back to all resume skills
-            all_skills = list(resume_skills_dict.values())
-            all_skills.sort(key=lambda x: (-x["count"], x["name"]))
-            return {
-                "skills": all_skills,
-                "match_score": None,
-                "total_required": 0
-            }
-            
-        all_skills = list(resume_skills_dict.values())
-        all_skills.sort(key=lambda x: (-x["count"], x["name"]))
+                
         return {
             "skills": all_skills,
+            "matched_skills": [],
+            "missing_skills": [],
             "match_score": None,
             "total_required": 0
         }

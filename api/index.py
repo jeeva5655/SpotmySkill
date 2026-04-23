@@ -53,6 +53,8 @@ def extract_skills_endpoint(resume: ResumeText):
         skills_data = extractor.extract_skills(resume.text, domain=resume.domain, company_requirement=resume.company_requirement)
         return {
             "skills": skills_data["skills"], 
+            "matched_skills": skills_data.get("matched_skills", []),
+            "missing_skills": skills_data.get("missing_skills", []),
             "count": len(skills_data["skills"]),
             "match_score": skills_data["match_score"],
             "total_required": skills_data["total_required"]
@@ -94,6 +96,8 @@ async def extract_skills_file_endpoint(
         skills_data = extractor.extract_skills(text, domain=domain, company_requirement=company_requirement)
         return {
             "skills": skills_data["skills"], 
+            "matched_skills": skills_data.get("matched_skills", []),
+            "missing_skills": skills_data.get("missing_skills", []),
             "count": len(skills_data["skills"]),
             "match_score": skills_data["match_score"],
             "total_required": skills_data["total_required"]

@@ -861,22 +861,60 @@
                     matchScoreBadge.style.display = 'none';
                 }
 
-                currentSkillsData.forEach((skill, index) => {
-                    const tag = document.createElement('div');
-                    tag.className = 'skill-tag';
+                if (data.match_score !== undefined && data.match_score !== null) {
+                    const matchedSkillsHTML = (data.matched_skills || []).map((skill, index) => {
+                        return `<div class="skill-tag" style="border-color: #34d399; background: rgba(52, 211, 153, 0.1); color: #a7f3d0; animation-delay: ${index * 0.05}s">${skill.name} <span style="opacity:0.6; font-size:0.8em; margin-left:6px; background:rgba(0,0,0,0.2); padding:2px 6px; border-radius:10px;">${skill.count}</span></div>`;
+                    }).join('');
                     
-                    // Highlight highly frequent skills
-                    if (skill.count > 2) {
-                        tag.style.borderColor = 'var(--accent)';
-                        tag.style.boxShadow = '0 0 10px rgba(139, 92, 246, 0.3)';
-                    }
+                    const missingSkillsHTML = (data.missing_skills || []).map((skill, index) => {
+                        return `<div class="skill-tag" style="border-color: #ef4444; background: rgba(239, 68, 68, 0.1); color: #fca5a5; animation-delay: ${index * 0.05}s">${skill.name}</div>`;
+                    }).join('');
+
+                    skillsContainer.innerHTML = `
+                        <div style="width: 100%; margin-bottom: 1.5rem; background: rgba(15, 23, 42, 0.4); padding: 1.5rem; border-radius: 1rem; border: 1px solid rgba(52, 211, 153, 0.2);">
+                            <h3 style="color: #34d399; margin-bottom: 1rem; font-size: 1.1rem; display: flex; justify-content: space-between;"><span>✅ Matched Requirements</span> <span>${(data.matched_skills || []).length}</span></h3>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">${matchedSkillsHTML || '<span style="color: var(--text-muted); font-size: 0.9rem;">No matching skills found.</span>'}</div>
+                        </div>
+                        <div style="width: 100%; margin-bottom: 1.5rem; background: rgba(15, 23, 42, 0.4); padding: 1.5rem; border-radius: 1rem; border: 1px solid rgba(239, 68, 68, 0.2);">
+                            <h3 style="color: #ef4444; margin-bottom: 1rem; font-size: 1.1rem; display: flex; justify-content: space-between;"><span>❌ Missing Requirements</span> <span>${(data.missing_skills || []).length}</span></h3>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">${missingSkillsHTML || '<span style="color: var(--text-muted); font-size: 0.9rem;">All requirements met! Great job.</span>'}</div>
+                        </div>
+                        <div style="width: 100%; border-top: 1px solid var(--glass-border); padding-top: 1.5rem; margin-top: 0.5rem;">
+                            <h3 style="color: var(--text-main); margin-bottom: 1rem; font-size: 1.1rem;">All Extracted Skills (${currentSkillsData.length})</h3>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;" id="all-skills-list"></div>
+                        </div>
+                    `;
                     
-                    tag.innerHTML = `${skill.name} <span style="opacity:0.6; font-size:0.8em; margin-left:6px; background:rgba(0,0,0,0.2); padding:2px 6px; border-radius:10px;">${skill.count}</span>`;
-                    
-                    // Add staggered animation delay
-                    tag.style.animationDelay = `${index * 0.05}s`;
-                    skillsContainer.appendChild(tag);
-                });
+                    const allSkillsList = document.getElementById('all-skills-list');
+                    currentSkillsData.forEach((skill, index) => {
+                        const tag = document.createElement('div');
+                        tag.className = 'skill-tag';
+                        if (skill.count > 2) {
+                            tag.style.borderColor = 'var(--accent)';
+                            tag.style.boxShadow = '0 0 10px rgba(139, 92, 246, 0.3)';
+                        }
+                        tag.innerHTML = `${skill.name} <span style="opacity:0.6; font-size:0.8em; margin-left:6px; background:rgba(0,0,0,0.2); padding:2px 6px; border-radius:10px;">${skill.count}</span>`;
+                        tag.style.animationDelay = `${index * 0.05}s`;
+                        allSkillsList.appendChild(tag);
+                    });
+                } else {
+                    currentSkillsData.forEach((skill, index) => {
+                        const tag = document.createElement('div');
+                        tag.className = 'skill-tag';
+                        
+                        // Highlight highly frequent skills
+                        if (skill.count > 2) {
+                            tag.style.borderColor = 'var(--accent)';
+                            tag.style.boxShadow = '0 0 10px rgba(139, 92, 246, 0.3)';
+                        }
+                        
+                        tag.innerHTML = `${skill.name} <span style="opacity:0.6; font-size:0.8em; margin-left:6px; background:rgba(0,0,0,0.2); padding:2px 6px; border-radius:10px;">${skill.count}</span>`;
+                        
+                        // Add staggered animation delay
+                        tag.style.animationDelay = `${index * 0.05}s`;
+                        skillsContainer.appendChild(tag);
+                    });
+                }
                 
                 // Scroll to results smoothly
                 setTimeout(() => {
