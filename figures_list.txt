@@ -1,0 +1,7 @@
+LIST OF FIGURES
+Figure 3.1 presents the system architecture diagram, illustrating the data flow from user submission through the API to the NLP engine and back as a structured JSON response. The decoupled design ensures that the frontend can be served from a global CDN, while the backend can be scaled independently based on API load.
+Figure 3.2 illustrates the NLP pipeline architecture, showing the order of component execution: tokenization → EntityRuler (rule-based SKILL extraction) → statistical NER → entity deduplication → sorted JSON output.
+Figure 4.2: Dark glassmorphism landing page featuring the gradient "SpotmySkill" title with ambient glow effects, establishing the visual identity of the application.
+Figure 4.3: Text input mode showing the styled dark textarea with placeholder text and the gradient extraction button. The tab selector for switching between text and file modes is visible above.
+Figure 4.4: File upload mode displaying the drag-and-drop zone with upload icon, dotted border, and browse button. Provides clear visual affordance for the upload interaction.
+Figure 4.5: Results card showing the extracted skills count badge, dynamically rendered skill tags with distinct styling, and the staggered animation effect in the initial render state.
